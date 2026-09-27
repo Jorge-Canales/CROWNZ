@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Catálogo digital CROWNZ — gorras streetwear. Pedidos por DM en Instagram @crownz.cpastore.">
+<meta property="og:title" content="CROWNZ · Catálogo">
+<meta property="og:description" content="Gorras streetwear. Consulta modelos y pide por DM.">
+<title>CROWNZ · Catálogo</title>
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+<style>
+  /* ==========================================================================
+     1. CONFIGURACIÓN VISUAL — variables de marca CROWNZ
+     ========================================================================== */
+  :root{
+    --bg:#0a0a0a;
+    --bg-raised:#151515;
+    --bg-card:#111111;
+    --line:#262626;
+    --text:#fafafa;
+    --text-dim:#9a9a9a;
+    --gold:#d4af37;
+    --gold-dim:#8f7527;
+    --danger:#ff3b3b;
+    --radius:6px;
+    --font-display:'Archivo Black','Arial Narrow',sans-serif;
+    --font-body:-apple-system,BlinkMacSystemFont,'Inter',system-ui,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:40;
+    background:rgba(10,10,10,.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1200px;margin:0 auto;padding:14px 20px;
+    display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  }
+  .logo{
+    font-family:var(--font-display);
+    font-size:22px;letter-spacing:1px;
+    color:var(--text);white-space:nowrap;
+  }
+  .logo span{color:var(--gold);}
+  .search-wrap{flex:1;min-width:180px;position:relative;}
+  #search{
+    width:100%;padding:10px 14px 10px 36px;
+    background:var(--bg-raised);border:1px solid var(--line);
+    border-radius:var(--radius);color:var(--text);font-size:15px;
+  }
+  #search:focus{outline:none;border-color:var(--gold);}
+  .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.5;}
+  .header-actions a{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--text-dim);text-decoration:none;font-size:14px;
+    padding:8px 10px;border:1px solid var(--line);border-radius:var(--radius);
+  }
+  .header-actions a:hover{color:var(--gold);border-color:var(--gold-dim);}
+  .header-actions a.ig-btn{
+    color:#fff;border:none;font-weight:700;
+    background:linear-gradient(45deg,#405de6,#5851db,#833ab4,#c13584,#e1306c,#fd1d1d,#f56040,#f77737,#fcaf45,#ffdc80);
+    background-size:250% 250%;
+    animation:ig-gradient 6s ease infinite;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .header-actions a.ig-btn:hover{
+    color:#fff;border-color:transparent;
+    transform:translateY(-1px);
+    box-shadow:0 4px 14px rgba(225,48,108,.4);
+  }
+  @keyframes ig-gradient{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+  }
+
+  /* ---------- Filtros ---------- */
+  .filters{
+    max-width:1200px;margin:0 auto;padding:14px 20px 0;
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  }
+  .chip{
+    padding:7px 14px;border-radius:999px;border:1px solid var(--line);
+    background:transparent;color:var(--text-dim);font-size:13.5px;
+    transition:border-color .15s,color .15s;
+  }
+  .chip.active,.chip:hover{border-color:var(--gold);color:var(--gold);}
+  .toggle-wrap{
+    margin-left:auto;display:flex;align-items:center;gap:8px;
+    color:var(--text-dim);font-size:13.5px;
+  }
+  .switch{
+    position:relative;width:38px;height:22px;border-radius:11px;
+    background:var(--bg-raised);border:1px solid var(--line);
+    transition:background .15s;flex-shrink:0;
+  }
+  .switch::after{
+    content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;
+    border-radius:50%;background:var(--text-dim);transition:.15s;
+  }
+  .switch.on{background:rgba(212,175,55,.25);border-color:var(--gold-dim);}
+  .switch.on::after{left:18px;background:var(--gold);}
+  .result-count{
+    max-width:1200px;margin:10px auto 0;padding:0 20px;
+    color:var(--text-dim);font-size:13px;
+  }
+
+  /* ---------- Grid ---------- */
+  .grid{
+    max-width:1200px;margin:0 auto;padding:16px 20px 60px;
+    display:grid;gap:16px;
+    grid-template-columns:repeat(1,1fr);
+  }
+  @media(min-width:520px){.grid{grid-template-columns:repeat(2,1fr);}}
+  @media(min-width:820px){.grid{grid-template-columns:repeat(3,1fr);}}
+  @media(min-width:1120px){.grid{grid-template-columns:repeat(4,1fr);}}
+
+  .card{
+    background:var(--bg-card);border:1px solid var(--line);
+    border-radius:var(--radius);overflow:hidden;
+    transition:border-color .15s,transform .15s;
+  }
+  .card:hover{border-color:var(--gold-dim);transform:translateY(-2px);}
+  .card-media{
+    position:relative;aspect-ratio:1/1;background:#000;overflow:hidden;
+    cursor:pointer;
+  }
+  .card-media img{width:100%;height:100%;object-fit:cover;}
+  .card.is-soldout .card-media img{filter:grayscale(100%);opacity:.6;}
+  .badges{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;gap:6px;pointer-events:none;}
+  .badge{
+    font-size:11px;font-weight:700;letter-spacing:.4px;
+    padding:4px 8px;border-radius:4px;text-transform:uppercase;
+  }
+  .badge-agotado{background:rgba(0,0,0,.8);color:#fff;border:1px solid #555;}
+  .badge-remate{background:var(--danger);color:#fff;}
+  .badge-nuevo{background:var(--gold);color:#0a0a0a;}
+  .badge-destacado{background:#fff;color:#0a0a0a;}
+  .badge-col{display:flex;flex-direction:column;gap:6px;}
+
+  .card-body{padding:12px 14px 14px;}
+  .card-cat{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;}
+  .card-name{font-family:var(--font-display);font-size:16px;margin:4px 0 2px;line-height:1.2;}
+  .card-tallas{font-size:12px;color:var(--text-dim);margin-bottom:8px;}
+  .card-stock{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:8px;}
+  .price-row{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .price-original{color:var(--text-dim);text-decoration:line-through;font-size:13.5px;}
+  .price-final{color:var(--text);font-weight:700;font-size:18px;}
+  .has-remate .price-final{color:var(--danger);font-weight:800;}
+
+  .btn-dm{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;padding:10px;border:none;border-radius:var(--radius);
+    background:var(--gold);color:#0a0a0a;font-weight:700;font-size:13.5px;
+    text-decoration:none;transition:background .15s;
+  }
+  .btn-dm:hover{background:#e8c65a;}
+  .btn-dm.disabled{
+    background:var(--bg-raised);color:var(--text-dim);
+    pointer-events:none;border:1px solid var(--line);
+  }
+
+  /* ---------- Estados ---------- */
+  .state-msg{
+    grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-dim);
+  }
+  .state-msg h3{font-family:var(--font-display);color:var(--text);margin-bottom:8px;font-size:18px;}
+  .retry-btn{
+    margin-top:14px;padding:9px 18px;border:1px solid var(--gold-dim);
+    background:transparent;color:var(--gold);border-radius:var(--radius);font-size:14px;
+  }
+
+  .skeleton-card{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  .skeleton-media{aspect-ratio:1/1;background:linear-gradient(90deg,#151515 25%,#1e1e1e 37%,#151515 63%);background-size:400% 100%;animation:shimmer 1.4s infinite;}
+  .skeleton-line{height:12px;margin:12px 14px;border-radius:4px;background:linear-gradient(90deg,#151515 25%,#1e1e1e 37%,#151515 63%);background-size:400% 100%;animation:shimmer 1.4s infinite;}
+  @keyframes shimmer{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.8);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:16px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
+    max-width:900px;width:100%;max-height:92vh;overflow-y:auto;
+    display:grid;grid-template-columns:1fr;
+  }
+  @media(min-width:720px){.modal{grid-template-columns:1fr 1fr;}}
+  .modal-close{
+    position:absolute;top:14px;right:14px;background:rgba(0,0,0,.6);
+    color:#fff;border:none;width:34px;height:34px;border-radius:50%;font-size:18px;z-index:5;
+  }
+  .modal-gallery{position:relative;background:#000;}
+  .modal-main-img{aspect-ratio:1/1;position:relative;overflow:hidden;}
+  .modal-main-img img{width:100%;height:100%;object-fit:cover;}
+  .modal-nav{
+    position:absolute;top:50%;transform:translateY(-50%);
+    width:38px;height:38px;border-radius:50%;border:none;
+    background:rgba(0,0,0,.55);color:#fff;font-size:15px;
+    display:flex;align-items:center;justify-content:center;
+    z-index:3;transition:background .15s;
+  }
+  .modal-nav:hover{background:rgba(0,0,0,.8);}
+  .modal-nav-prev{left:10px;}
+  .modal-nav-next{right:10px;}
+  .modal-nav.hidden{display:none;}
+  .modal.is-soldout .modal-main-img img,
+  .modal.is-soldout .thumb img{filter:grayscale(100%);opacity:.6;}
+  .thumbs{display:flex;gap:8px;padding:10px;overflow-x:auto;}
+  .thumb{width:56px;height:56px;flex-shrink:0;border-radius:4px;overflow:hidden;border:2px solid transparent;cursor:pointer;}
+  .thumb.active{border-color:var(--gold);}
+  .thumb img{width:100%;height:100%;object-fit:cover;}
+  .modal-info{padding:20px;position:relative;}
+  .modal-info .card-cat{margin-bottom:6px;}
+  .modal-info h2{font-family:var(--font-display);font-size:22px;margin:0 0 10px;}
+  .modal-stock{font-size:13px;color:var(--gold);font-weight:600;margin-bottom:12px;}
+  .modal-info .desc{color:var(--text-dim);font-size:14.5px;margin-bottom:16px;}
+  .modal-actions{display:flex;gap:10px;margin-top:16px;}
+  .btn-share{
+    padding:10px 14px;border:1px solid var(--line);background:transparent;
+    color:var(--text-dim);border-radius:var(--radius);font-size:13.5px;
+  }
+  .btn-share:hover{color:var(--gold);border-color:var(--gold-dim);}
+
+  .footer{
+    border-top:1px solid var(--line);padding:24px 20px;text-align:center;
+    color:var(--text-dim);font-size:13px;
+  }
+  .footer a{color:var(--gold);text-decoration:none;}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--gold);color:#0a0a0a;font-weight:700;font-size:13.5px;
+    padding:10px 18px;border-radius:999px;z-index:200;
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+    max-width:90vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .welcome-overlay{
+    position:fixed;inset:0;z-index:110;padding:16px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.8);
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  .welcome-overlay.open{opacity:1;visibility:visible;pointer-events:auto;}
+  .welcome-box{
+    background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
+    max-width:420px;width:100%;padding:26px 24px;position:relative;
+    transform:translateY(16px) scale(.96);opacity:0;
+    transition:transform .3s cubic-bezier(.2,.7,.3,1),opacity .3s ease;
+  }
+  .welcome-overlay.open .welcome-box{transform:translateY(0) scale(1);opacity:1;}
+  .welcome-box h3{font-family:var(--font-display);font-size:18px;margin:0 0 10px;}
+  .welcome-box p{color:var(--text-dim);font-size:14px;line-height:1.55;margin:0 0 20px;}
+  .welcome-ok-btn{width:100%;background:var(--gold);color:#0a0a0a;border:none;font-weight:700;padding:11px;}
+  .welcome-ok-btn:hover{background:#e8c65a;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">CROWN<span>Z</span></div>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="search" type="text" placeholder="Buscar gorra..." aria-label="Buscar productos">
+    </div>
+    <div class="header-actions">
+      <a id="ig-link" class="ig-btn" href="#" target="_blank" rel="noopener">Instagram ↗</a>
+    </div>
+  </div>
+  <div class="filters" id="filters">
+    <!-- chips de categoría generados por JS -->
+    <div class="toggle-wrap">
+      <span>Solo disponibles</span>
+      <div class="switch" id="toggle-disponibles" role="switch" aria-checked="false" tabindex="0"></div>
+    </div>
+  </div>
+  <div class="result-count" id="result-count"></div>
+</header>
+
+<main>
+  <div class="grid" id="grid" aria-live="polite">
+    <!-- productos / estados generados por JS -->
+  </div>
+</main>
+
+<div class="footer">
+  Catálogo informativo · Ventas por DM en <a id="ig-link-footer" href="#" target="_blank" rel="noopener">Instagram</a>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <button class="modal-close" id="modal-close" aria-label="Cerrar">&times;</button>
+    <div class="modal-gallery">
+      <div class="modal-main-img">
+        <img id="modal-main-img" src="" alt="">
+        <button type="button" class="modal-nav modal-nav-prev" id="modal-prev" aria-label="Imagen anterior">&#10094;</button>
+        <button type="button" class="modal-nav modal-nav-next" id="modal-next" aria-label="Imagen siguiente">&#10095;</button>
+      </div>
+      <div class="thumbs" id="modal-thumbs"></div>
+    </div>
+    <div class="modal-info">
+      <div class="card-cat" id="modal-cat"></div>
+      <h2 id="modal-title"></h2>
+      <div class="card-tallas" id="modal-tallas"></div>
+      <div class="modal-stock" id="modal-stock"></div>
+      <div class="price-row" id="modal-price"></div>
+      <div class="desc" id="modal-desc"></div>
+      <button type="button" class="btn-dm" id="modal-dm-btn">Ordena por IG</button>
+      <div class="modal-actions">
+        <button class="btn-share" id="modal-share">Compartir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="welcome-overlay" id="welcome-overlay">
+  <div class="welcome-box">
+    <button class="modal-close" id="welcome-close" aria-label="Cerrar">&times;</button>
+    <h3>Así se ordena</h3>
+    <p>Haz clic en el botón "Ordena por IG" de la gorra que te interese: copiaremos el mensaje automáticamente y te llevaremos al chat de Instagram. Solo pégalo (Ctrl/Cmd + V) y envíalo.</p>
+    <button class="retry-btn welcome-ok-btn" id="welcome-ok">Entendido</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ==========================================================================
+   2. CONFIGURACIÓN — debe coincidir con Code.gs
+   ========================================================================== */
+// 👉 Pega aquí la URL de tu Web App de Apps Script (termina en /exec).
+// La consigues en: Implementar → Gestionar implementaciones → copiar URL.
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwmD09q2nr87kxYBrC5_GZx3M7ivv1_QoMG5jnUDupvJsTODa8TwQn1jekPAeJ8YY/exec';
+
+const IG_HANDLE = 'crownz.capstore';
+const IG_LABEL = '@CROWNZ.capstore';
+const DEBOUNCE_MS = 250;
+
+/* ==========================================================================
+   3. ESTADO
+   ========================================================================== */
+let ALL_PRODUCTS = [];
+let currentCategory = 'Todos';
+let onlyAvailable = false;
+let searchTerm = '';
+let currentModalProduct = null;
+let currentModalImgIndex = 0;
+let currentModalImgs = [];
+
+const el = (sel) => document.querySelector(sel);
+const gridEl = el('#grid');
+const resultCountEl = el('#result-count');
+const filtersEl = el('#filters');
+
+document.getElementById('ig-link').href = 'https://instagram.com/' + IG_HANDLE;
+document.getElementById('ig-link-footer').href = 'https://instagram.com/' + IG_HANDLE;
+
+/* ==========================================================================
+   4. UTILIDADES
+   ========================================================================== */
+function normalizeText(str){
+  return String(str || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function formatPrice(n, currency){
+  try{
+    return new Intl.NumberFormat('es-MX', { style:'currency', currency: currency || 'MXN', maximumFractionDigits:2 })
+      .format(n);
+  }catch(e){
+    return (currency || '$') + ' ' + Number(n).toFixed(2);
+  }
+}
+
+function debounce(fn, ms){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Instagram NO soporta oficialmente mensajes pre-llenados vía ?text= en los
+// links ig.me/m/ (a diferencia de wa.me de WhatsApp) — Meta simplemente lo
+// ignora. La alternativa práctica: copiamos el mensaje al portapapeles y
+// abrimos el chat vacío, avisando al usuario que solo tiene que pegarlo.
+function showToast(msg, durationMs){
+  const t = el('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer = setTimeout(() => t.classList.remove('show'), durationMs || 2600);
+}
+
+function buildDmMessage(nombreGorra, precioGorra){
+  return `Buen día, quiero más información de la siguiente gorra: *${nombreGorra}*, con el precio de *${precioGorra}*`;
+}
+
+async function handleDmClick(nombreGorra, precioGorra){
+  const mensaje = buildDmMessage(nombreGorra, precioGorra);
+  try{
+    await navigator.clipboard.writeText(mensaje);
+    showToast('Mensaje copiado — pégalo en el chat de Instagram');
+  }catch(err){
+    showToast('Abriendo Instagram — escribe: "' + mensaje + '"');
+  }
+  window.open(`https://ig.me/m/${IG_HANDLE}`, '_blank', 'noopener,noreferrer');
+}
+
+/* ==========================================================================
+   5. CARGA DE DATOS
+   ========================================================================== */
+function loadCatalog(){
+  renderSkeletons();
+
+  if (!SCRIPT_URL || SCRIPT_URL.includes('TU_ID_DE_DESPLIEGUE')){
+    renderError(new Error('Falta configurar SCRIPT_URL con la URL real de tu Web App de Apps Script.'));
+    return;
+  }
+
+  // Este index.html vive fuera de Apps Script (ej. en Vercel), así que
+  // pedimos el catálogo con una URL absoluta a la Web App publicada.
+  // Apps Script permite peticiones GET cross-origin sin configuración extra.
+  fetch(SCRIPT_URL + '?action=json')
+    .then(r => r.json())
+    .then(handleCatalogData)
+    .catch(renderError);
+}
+
+function handleCatalogData(data){
+  if (!data || !data.ok) {
+    renderError(new Error((data && data.error) || 'Respuesta no válida del servidor'));
+    return;
+  }
+  ALL_PRODUCTS = data.products || [];
+  buildCategoryChips();
+  renderGrid();
+}
+
+function renderSkeletons(){
+  const items = Array.from({length:8}).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-media"></div>
+      <div class="skeleton-line" style="width:60%"></div>
+      <div class="skeleton-line" style="width:80%"></div>
+      <div class="skeleton-line" style="width:40%"></div>
+    </div>`).join('');
+  gridEl.innerHTML = items;
+  resultCountEl.textContent = '';
+}
+
+function renderError(err){
+  gridEl.innerHTML = `
+    <div class="state-msg">
+      <h3>No pudimos cargar el catálogo</h3>
+      <p>Revisa tu conexión e inténtalo de nuevo.</p>
+      <button class="retry-btn" id="retry-btn">Reintentar</button>
+    </div>`;
+  document.getElementById('retry-btn').addEventListener('click', loadCatalog);
+  resultCountEl.textContent = '';
+  console.error('CROWNZ catalog error:', err);
+}
+
+/* ==========================================================================
+   6. FILTROS Y CHIPS DE CATEGORÍA
+   ========================================================================== */
+function buildCategoryChips(){
+  const cats = ['Todos', ...new Set(ALL_PRODUCTS.map(p => p.categoria).filter(Boolean))];
+  const chipsHtml = cats.map(c =>
+    `<button class="chip${c === currentCategory ? ' active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
+  ).join('');
+
+  // Reinserta los chips antes del toggle de disponibilidad
+  const toggleWrap = filtersEl.querySelector('.toggle-wrap');
+  filtersEl.querySelectorAll('.chip').forEach(n => n.remove());
+  toggleWrap.insertAdjacentHTML('beforebegin', chipsHtml);
+
+  filtersEl.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCategory = btn.dataset.cat;
+      filtersEl.querySelectorAll('.chip').forEach(b => b.classList.toggle('active', b === btn));
+      renderGrid();
+    });
+  });
+}
+
+/* ==========================================================================
+   7. RENDER DE LA GRID
+   ========================================================================== */
+function getFilteredProducts(){
+  const term = normalizeText(searchTerm);
+  return ALL_PRODUCTS.filter(p => {
+    if (currentCategory !== 'Todos' && p.categoria !== currentCategory) return false;
+    if (onlyAvailable && p.agotado) return false;
+    if (term){
+      const haystack = normalizeText(p.nombre + ' ' + p.descripcion);
+      if (!haystack.includes(term)) return false;
+    }
+    return true;
+  });
+}
+
+function renderGrid(){
+  const list = getFilteredProducts();
+  resultCountEl.textContent = list.length + (list.length === 1 ? ' resultado' : ' resultados');
+
+  if (list.length === 0){
+    gridEl.innerHTML = `
+      <div class="state-msg">
+        <h3>No hay gorras que coincidan</h3>
+        <p>Prueba con otra categoría o término de búsqueda.</p>
+      </div>`;
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'contents';
+  wrapper.innerHTML = list.map(cardTemplate).join('');
+  while (wrapper.firstChild) frag.appendChild(wrapper.firstChild);
+
+  gridEl.innerHTML = '';
+  gridEl.appendChild(frag);
+
+  gridEl.querySelectorAll('[data-open-modal]').forEach(node => {
+    node.addEventListener('click', () => openModal(node.dataset.openModal));
+  });
+
+  gridEl.querySelectorAll('[data-dm-nombre]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      handleDmClick(btn.dataset.dmNombre, btn.dataset.dmPrecio)
+    });
+  });
+}
+
+function cardTemplate(p){
+  const hasRemate = p.remate > 0 && !p.agotado;
+  const precioTexto = formatPrice(p.precioFinal, p.moneda);
+  const badges = [];
+  if (p.agotado) badges.push('<span class="badge badge-agotado">Agotado</span>');
+  if (hasRemate) badges.push(`<span class="badge badge-remate">-${p.remate}% OFF</span>`);
+  const topLeftBadges = [];
+  if (p.nuevo) topLeftBadges.push('<span class="badge badge-nuevo">Nuevo</span>');
+  if (p.destacado) topLeftBadges.push('<span class="badge badge-destacado">Destacado</span>');
+
+  return `
+    <div class="card${p.agotado ? ' is-soldout' : ''}${hasRemate ? ' has-remate' : ''}">
+      <div class="card-media" data-open-modal="${escapeHtml(p.id)}">
+        <img src="${escapeHtml(p.imagenPrincipal)}" alt="${escapeHtml(p.nombre)}" loading="lazy" decoding="async">
+        <div class="badges">
+          <div class="badge-col">${topLeftBadges.join('')}</div>
+          <div class="badge-col">${badges.join('')}</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${escapeHtml(p.categoria)}</div>
+        <div class="card-name">${escapeHtml(p.nombre)}</div>
+        ${p.tallas ? `<div class="card-tallas">${escapeHtml(p.tallas)}</div>` : ''}
+        ${!p.agotado ? `<div class="card-stock">${p.unidades === 1 ? 'Última unidad' : 'Quedan ' + p.unidades + ' unidades'}</div>` : ''}
+        <div class="price-row">
+          ${hasRemate ? `<span class="price-original">${formatPrice(p.precio, p.moneda)}</span>` : ''}
+          <span class="price-final">${formatPrice(p.precioFinal, p.moneda)}</span>
+        </div>
+        ${p.agotado
+          ? `<span class="btn-dm disabled">Agotado</span>`
+          : `<button type="button" class="btn-dm" data-dm-nombre="${escapeHtml(p.nombre)}" data-dm-precio="${escapeHtml(precioTexto)}">Ordena por IG</button>`}
+      </div>
+    </div>`;
+}
+
+/* ==========================================================================
+   8. MODAL DE DETALLE
+   ========================================================================== */
+function openModal(id){
+  const p = ALL_PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  currentModalProduct = p;
+  currentModalImgIndex = 0;
+
+  const modal = el('#modal');
+  modal.classList.toggle('is-soldout', p.agotado);
+
+  el('#modal-cat').textContent = p.categoria;
+  el('#modal-title').textContent = p.nombre;
+  el('#modal-tallas').textContent = p.tallas || '';
+  el('#modal-stock').textContent = p.agotado ? '' : (p.unidades === 1 ? 'Última unidad' : 'Quedan ' + p.unidades + ' unidades');
+
+  const hasRemate = p.remate > 0 && !p.agotado;
+  el('#modal-price').innerHTML = hasRemate
+    ? `<span class="price-original">${formatPrice(p.precio, p.moneda)}</span><span class="price-final">${formatPrice(p.precioFinal, p.moneda)}</span>`
+    : `<span class="price-final">${formatPrice(p.precioFinal, p.moneda)}</span>`;
+  el('#modal-price').parentElement && (el('#modal-price').className = 'price-row' + (hasRemate ? ' has-remate-modal' : ''));
+
+  el('#modal-desc').textContent = p.descripcion || '';
+
+  const dmBtn = el('#modal-dm-btn');
+  if (p.agotado){
+    dmBtn.classList.add('disabled');
+    dmBtn.disabled = true;
+    dmBtn.textContent = 'Agotado';
+    dmBtn.onclick = null;
+  } else {
+    dmBtn.classList.remove('disabled');
+    dmBtn.disabled = false;
+    dmBtn.textContent = 'Ordena por IG';
+
+    //dmBtn.onclick = () => handleDmClick(p.nombre);
+    const precioTexto = formatPrice(p.precioFinal, p.moneda);
+    dmBtn.onclick = () => handleDmClick(p.nombre, precioTexto);
+  }
+
+  const imgs = [p.imagenes.frente, p.imagenes.lateralIzq, p.imagenes.lateralDer, p.imagenes.trasera].filter(Boolean);
+  renderModalGallery(imgs);
+
+  el('#modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  el('#modal-close').focus();
+}
+
+function renderModalGallery(imgs){
+  currentModalImgs = imgs;
+  currentModalImgIndex = 0;
+  el('#modal-thumbs').innerHTML = imgs.map((src, i) =>
+    `<div class="thumb${i === 0 ? ' active' : ''}" data-idx="${i}"><img src="${escapeHtml(src)}" alt="Vista ${i+1}" loading="lazy"></div>`
+  ).join('');
+  el('#modal-thumbs').querySelectorAll('.thumb').forEach(t => {
+    t.addEventListener('click', () => showModalImage(Number(t.dataset.idx)));
+  });
+
+  const showArrows = imgs.length > 1;
+  el('#modal-prev').classList.toggle('hidden', !showArrows);
+  el('#modal-next').classList.toggle('hidden', !showArrows);
+
+  showModalImage(0);
+}
+
+function showModalImage(idx){
+  if (!currentModalImgs.length) return;
+  currentModalImgIndex = (idx + currentModalImgs.length) % currentModalImgs.length;
+  el('#modal-main-img').src = currentModalImgs[currentModalImgIndex];
+  el('#modal-main-img').alt = currentModalProduct ? currentModalProduct.nombre : '';
+  el('#modal-thumbs').querySelectorAll('.thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === currentModalImgIndex);
+  });
+}
+
+el('#modal-prev').addEventListener('click', () => showModalImage(currentModalImgIndex - 1));
+el('#modal-next').addEventListener('click', () => showModalImage(currentModalImgIndex + 1));
+
+document.addEventListener('keydown', (e) => {
+  if (!el('#modal-overlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') showModalImage(currentModalImgIndex - 1);
+  if (e.key === 'ArrowRight') showModalImage(currentModalImgIndex + 1);
+});
+
+function closeModal(){
+  el('#modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModalProduct = null;
+}
+
+el('#modal-close').addEventListener('click', closeModal);
+el('#modal-overlay').addEventListener('click', (e) => { if (e.target.id === 'modal-overlay') closeModal(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (el('#modal-overlay').classList.contains('open')) closeModal();
+  if (el('#welcome-overlay').classList.contains('open')) closeWelcomePopup();
+});
+
+el('#modal-share').addEventListener('click', () => {
+  const p = currentModalProduct;
+  if (!p) return;
+  const shareData = { title: 'CROWNZ · ' + p.nombre, text: p.descripcion, url: location.href };
+  if (navigator.share){
+    navigator.share(shareData).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(location.href).then(() => {
+      const btn = el('#modal-share');
+      const original = btn.textContent;
+      btn.textContent = '¡Link copiado!';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    });
+  }
+});
+
+/* ==========================================================================
+   9. BUSCADOR Y TOGGLE
+   ========================================================================== */
+el('#search').addEventListener('input', debounce((e) => {
+  searchTerm = e.target.value;
+  renderGrid();
+}, DEBOUNCE_MS));
+
+function toggleDisponibles(){
+  onlyAvailable = !onlyAvailable;
+  el('#toggle-disponibles').classList.toggle('on', onlyAvailable);
+  el('#toggle-disponibles').setAttribute('aria-checked', String(onlyAvailable));
+  renderGrid();
+}
+el('#toggle-disponibles').addEventListener('click', toggleDisponibles);
+el('#toggle-disponibles').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleDisponibles(); }
+});
+
+/* ==========================================================================
+   11. POPUP DE BIENVENIDA (instrucciones de compra)
+   ========================================================================== */
+function showWelcomePopup(){
+  el('#welcome-overlay').classList.add('open');
+}
+function closeWelcomePopup(){
+  el('#welcome-overlay').classList.remove('open');
+}
+el('#welcome-close').addEventListener('click', closeWelcomePopup);
+el('#welcome-ok').addEventListener('click', closeWelcomePopup);
+el('#welcome-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'welcome-overlay') closeWelcomePopup();
+});
+
+/* ==========================================================================
+   12. INICIO
+   ========================================================================== */
+loadCatalog();
+setTimeout(showWelcomePopup, 1000);
+</script>
+</body>
+</html>

@@ -487,8 +487,12 @@ function renderError(err){
 /* ==========================================================================
    6. FILTROS Y CHIPS DE CATEGORÍA
    ========================================================================== */
+function getCategorias(p){
+  return (p.categoria || '').split(',').map(c => c.trim()).filter(Boolean);
+}
+
 function buildCategoryChips(){
-  const cats = ['Todos', ...new Set(ALL_PRODUCTS.map(p => p.categoria).filter(Boolean))];
+  const cats = ['Todos', ...new Set(ALL_PRODUCTS.flatMap(getCategorias))];
   const chipsHtml = cats.map(c =>
     `<button class="chip${c === currentCategory ? ' active' : ''}" data-cat="${escapeHtml(c)}">${escapeHtml(c)}</button>`
   ).join('');
@@ -513,7 +517,7 @@ function buildCategoryChips(){
 function getFilteredProducts(){
   const term = normalizeText(searchTerm);
   return ALL_PRODUCTS.filter(p => {
-    if (currentCategory !== 'Todos' && p.categoria !== currentCategory) return false;
+    if (currentCategory !== 'Todos' && !getCategorias(p).includes(currentCategory)) return false;
     if (onlyAvailable && p.agotado) return false;
     if (term){
       const haystack = normalizeText(p.nombre + ' ' + p.descripcion);
@@ -564,7 +568,7 @@ function cardTemplate(p){
   if (hasRemate) badges.push(`<span class="badge badge-remate">-${p.remate}% OFF</span>`);
   const topLeftBadges = [];
   if (p.nuevo) topLeftBadges.push('<span class="badge badge-nuevo">Nuevo</span>');
-  if (p.destacado) topLeftBadges.push('<span class="badge badge-destacado">Destacado</span>');
+  if (p.destacado) topLeftBadges.push('<span class="badge badge-destacado">Mejor vendido</span>');
 
   return `
     <div class="card${p.agotado ? ' is-soldout' : ''}${hasRemate ? ' has-remate' : ''}">
@@ -576,7 +580,7 @@ function cardTemplate(p){
         </div>
       </div>
       <div class="card-body">
-        <div class="card-cat">${escapeHtml(p.categoria)}</div>
+        <div class="card-cat">${getCategorias(p).map(escapeHtml).join(' · ')}</div>
         <div class="card-name">${escapeHtml(p.nombre)}</div>
         ${p.tallas ? `<div class="card-tallas">${escapeHtml(p.tallas)}</div>` : ''}
         ${!p.agotado ? `<div class="card-stock">${p.unidades === 1 ? 'Última unidad' : 'Quedan ' + p.unidades + ' unidades'}</div>` : ''}
@@ -603,7 +607,7 @@ function openModal(id){
   const modal = el('#modal');
   modal.classList.toggle('is-soldout', p.agotado);
 
-  el('#modal-cat').textContent = p.categoria;
+  el('#modal-cat').textContent = getCategorias(p).join(' · ');
   el('#modal-title').textContent = p.nombre;
   el('#modal-tallas').textContent = p.tallas || '';
   el('#modal-stock').textContent = p.agotado ? '' : (p.unidades === 1 ? 'Última unidad' : 'Quedan ' + p.unidades + ' unidades');

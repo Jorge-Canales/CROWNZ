@@ -6,6 +6,14 @@
 <meta name="description" content="Catálogo digital CROWNZ — gorras streetwear. Pedidos por DM en Instagram @crownz.cpastore.">
 <meta property="og:title" content="CROWNZ · Catálogo">
 <meta property="og:description" content="Gorras streetwear. Consulta modelos y pide por DM.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CROWNZ">
+<meta property="og:locale" content="es_MX">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="preconnect" href="https://drive.google.com">
+<link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin>
 <title>CROWNZ · Catálogo</title>
 <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
 <style>
@@ -57,6 +65,7 @@
     color:var(--text);white-space:nowrap;
   }
   .logo span{color:var(--gold);}
+  .logo-img{display:block;height:40px;width:auto;max-width:160px;object-fit:contain;}
   .search-wrap{flex:1;min-width:180px;position:relative;}
   #search{
     width:100%;padding:10px 14px 10px 36px;
@@ -237,6 +246,14 @@
     color:var(--text-dim);border-radius:var(--radius);font-size:13.5px;
   }
   .btn-share:hover{color:var(--gold);border-color:var(--gold-dim);}
+  .share-menu{display:none;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .share-menu.open{display:flex;}
+  .share-menu a,.share-menu button{
+    display:inline-flex;align-items:center;padding:9px 14px;
+    border:1px solid var(--line);background:transparent;color:var(--text-dim);
+    border-radius:var(--radius);font-size:13.5px;text-decoration:none;cursor:pointer;
+  }
+  .share-menu a:hover,.share-menu button:hover{color:var(--gold);border-color:var(--gold-dim);}
 
   .footer{
     border-top:1px solid var(--line);padding:24px 20px;text-align:center;
@@ -279,7 +296,7 @@
 
 <header>
   <div class="header-inner">
-    <div class="logo">CROWN<span>Z</span></div>
+    <div class="logo"><img src="img/banner.webp" alt="CROWNZ" class="logo-img"></div>
     <div class="search-wrap">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input id="search" type="text" placeholder="Buscar gorra..." aria-label="Buscar productos">
@@ -330,6 +347,11 @@
       <div class="modal-actions">
         <button class="btn-share" id="modal-share">Compartir</button>
       </div>
+      <div class="share-menu" id="share-menu">
+        <a id="share-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <a id="share-fb" href="#" target="_blank" rel="noopener">Facebook</a>
+        <button type="button" id="share-copy">Copiar enlace</button>
+      </div>
     </div>
   </div>
 </div>
@@ -357,6 +379,10 @@ const IG_HANDLE = 'crownz.capstore';
 const IG_LABEL = '@CROWNZ.capstore';
 const DEBOUNCE_MS = 250;
 
+// true = al compartir se usa /g/ID (vista previa con foto y precio de la gorra).
+// Requiere api/gorra.js y vercel.json en Vercel. Si no los usas, ponlo en false.
+const SHARE_PREVIEW = false;
+
 /* ==========================================================================
    3. ESTADO
    ========================================================================== */
@@ -367,6 +393,8 @@ let searchTerm = '';
 let currentModalProduct = null;
 let currentModalImgIndex = 0;
 let currentModalImgs = [];
+let modalPushed = false;      // true si abrir el modal agregó una entrada al historial
+let deepLinkHandled = false;  // el enlace ?gorra=ID solo se abre una vez
 
 const el = (sel) => document.querySelector(sel);
 const gridEl = el('#grid');
@@ -433,31 +461,64 @@ async function handleDmClick(nombreGorra, precioGorra){
 /* ==========================================================================
    5. CARGA DE DATOS
    ========================================================================== */
-function loadCatalog(){
-  renderSkeletons();
+const LS_CATALOG_KEY = 'crownz_catalog_v1';
 
+function readCatalogCache(){
+  try{
+    const raw = localStorage.getItem(LS_CATALOG_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw);
+    return (c && c.data && c.data.ok && Array.isArray(c.data.products)) ? c.data : null;
+  }catch(e){ return null; }
+}
+
+function writeCatalogCache(data){
+  try{ localStorage.setItem(LS_CATALOG_KEY, JSON.stringify({ t: Date.now(), data: data })); }catch(e){}
+}
+
+function loadCatalog(){
   if (!SCRIPT_URL || SCRIPT_URL.includes('TU_ID_DE_DESPLIEGUE')){
     renderError(new Error('Falta configurar SCRIPT_URL con la URL real de tu Web App de Apps Script.'));
     return;
   }
 
-  // Este index.html vive fuera de Apps Script (ej. en Vercel), así que
-  // pedimos el catálogo con una URL absoluta a la Web App publicada.
-  // Apps Script permite peticiones GET cross-origin sin configuración extra.
+  // 1) Si ya hay una copia guardada, se pinta al instante (sin esperar a Apps Script).
+  const cached = readCatalogCache();
+  if (cached) applyCatalog(cached);
+  else renderSkeletons();
+
+  // 2) En paralelo se pide la versión nueva; solo se vuelve a pintar si cambió algo.
   fetch(SCRIPT_URL + '?action=json')
     .then(r => r.json())
-    .then(handleCatalogData)
-    .catch(renderError);
+    .then(data => {
+      if (!data || !data.ok) throw new Error((data && data.error) || 'Respuesta no válida del servidor');
+      const changed = !cached || JSON.stringify(cached.products) !== JSON.stringify(data.products);
+      writeCatalogCache(data);
+      if (changed) applyCatalog(data);
+    })
+    .catch(err => {
+      if (cached) console.warn('CROWNZ: no se pudo actualizar, se muestra la copia guardada.', err);
+      else renderError(err);
+    });
 }
 
-function handleCatalogData(data){
-  if (!data || !data.ok) {
-    renderError(new Error((data && data.error) || 'Respuesta no válida del servidor'));
-    return;
-  }
+function applyCatalog(data){
   ALL_PRODUCTS = data.products || [];
   buildCategoryChips();
   renderGrid();
+  openFromUrl();
+}
+
+function openFromUrl(){
+  if (deepLinkHandled) return;
+  const id = new URLSearchParams(location.search).get('gorra');
+  if (!id) return;
+  const prod = ALL_PRODUCTS.find(x => String(x.id) === id);
+  if (prod){
+    deepLinkHandled = true;
+    closeWelcomePopup();
+    openModal(prod.id, true);   // true = no agregar otra entrada al historial
+  }
 }
 
 function renderSkeletons(){
@@ -560,7 +621,7 @@ function renderGrid(){
   });
 }
 
-function cardTemplate(p){
+function cardTemplate(p, i){
   const hasRemate = p.remate > 0 && !p.agotado;
   const precioTexto = formatPrice(p.precioFinal, p.moneda);
   const badges = [];
@@ -573,7 +634,7 @@ function cardTemplate(p){
   return `
     <div class="card${p.agotado ? ' is-soldout' : ''}${hasRemate ? ' has-remate' : ''}">
       <div class="card-media" data-open-modal="${escapeHtml(p.id)}">
-        <img src="${escapeHtml(p.imagenPrincipal)}" alt="${escapeHtml(p.nombre)}" loading="lazy" decoding="async">
+        <img src="${escapeHtml(p.imagenPrincipal)}" alt="${escapeHtml(p.nombre)}" loading="${i < 4 ? 'eager' : 'lazy'}" ${i < 2 ? 'fetchpriority="high" ' : ''}decoding="async">
         <div class="badges">
           <div class="badge-col">${topLeftBadges.join('')}</div>
           <div class="badge-col">${badges.join('')}</div>
@@ -598,7 +659,7 @@ function cardTemplate(p){
 /* ==========================================================================
    8. MODAL DE DETALLE
    ========================================================================== */
-function openModal(id){
+function openModal(id, skipPush){
   const p = ALL_PRODUCTS.find(x => x.id === id);
   if (!p) return;
   currentModalProduct = p;
@@ -639,9 +700,16 @@ function openModal(id){
   const imgs = [p.imagenes.frente, p.imagenes.lateralIzq, p.imagenes.lateralDer, p.imagenes.trasera].filter(Boolean);
   renderModalGallery(imgs);
 
+  el('#share-menu').classList.remove('open');
   el('#modal-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   el('#modal-close').focus();
+  if (!skipPush){
+    try{
+      history.pushState({ crownzModal: p.id }, '', buildProductUrl(p.id));
+      modalPushed = true;
+    }catch(e){}
+  }
 }
 
 function renderModalGallery(imgs){
@@ -680,13 +748,27 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') showModalImage(currentModalImgIndex + 1);
 });
 
-function closeModal(){
+function closeModal(fromPop){
+  const wasOpen = el('#modal-overlay').classList.contains('open');
   el('#modal-overlay').classList.remove('open');
   document.body.style.overflow = '';
   currentModalProduct = null;
+  el('#share-menu').classList.remove('open');
+  if (!wasOpen) return;
+
+  if (fromPop === true){            // se cerró con el botón "atrás" del navegador
+    modalPushed = false;
+    return;
+  }
+  if (modalPushed){                 // se cerró con la X / fuera del modal / Esc
+    modalPushed = false;
+    history.back();                 // quita la entrada que agregó openModal
+  } else {
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  }
 }
 
-el('#modal-close').addEventListener('click', closeModal);
+el('#modal-close').addEventListener('click', () => closeModal());
 el('#modal-overlay').addEventListener('click', (e) => { if (e.target.id === 'modal-overlay') closeModal(); });
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
@@ -694,20 +776,69 @@ document.addEventListener('keydown', (e) => {
   if (el('#welcome-overlay').classList.contains('open')) closeWelcomePopup();
 });
 
-el('#modal-share').addEventListener('click', () => {
+/* ---------- Botón "atrás" / "adelante" del navegador ---------- */
+window.addEventListener('popstate', (e) => {
+  const id = new URLSearchParams(location.search).get('gorra');
+  const isOpen = el('#modal-overlay').classList.contains('open');
+  if (id){
+    const prod = ALL_PRODUCTS.find(x => String(x.id) === id);
+    if (prod && !isOpen){
+      openModal(prod.id, true);
+      modalPushed = !!(e.state && e.state.crownzModal);
+    }
+  } else if (isOpen){
+    closeModal(true);
+  }
+});
+
+/* ---------- Compartir: enlace propio por gorra ---------- */
+function buildProductUrl(id){
+  return location.origin + location.pathname + '?gorra=' + encodeURIComponent(id);
+}
+
+// Enlace que se comparte: /g/ID muestra foto y precio en la vista previa;
+// al abrirlo, redirige a /?gorra=ID.
+function buildShareUrl(id){
+  return SHARE_PREVIEW
+    ? location.origin + '/g/' + encodeURIComponent(id)
+    : buildProductUrl(id);
+}
+
+function getShareData(p){
+  const url = buildShareUrl(p.id);
+  const text = 'Mira esta gorra de CROWNZ: ' + p.nombre + ' — ' + formatPrice(p.precioFinal, p.moneda);
+  return { title: 'CROWNZ · ' + p.nombre, text, url };
+}
+
+async function copyLink(url){
+  try{
+    await navigator.clipboard.writeText(url);
+    showToast('¡Enlace copiado!');
+  }catch(err){
+    window.prompt('Copia este enlace:', url);
+  }
+}
+
+el('#modal-share').addEventListener('click', async () => {
   const p = currentModalProduct;
   if (!p) return;
-  const shareData = { title: 'CROWNZ · ' + p.nombre, text: p.descripcion, url: location.href };
+  const data = getShareData(p);
+
+  // Celular: hoja nativa de compartir (WhatsApp, Instagram, Telegram, etc.)
   if (navigator.share){
-    navigator.share(shareData).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(location.href).then(() => {
-      const btn = el('#modal-share');
-      const original = btn.textContent;
-      btn.textContent = '¡Link copiado!';
-      setTimeout(() => { btn.textContent = original; }, 1800);
-    });
+    try{ await navigator.share(data); return; }
+    catch(err){ if (err && err.name === 'AbortError') return; }
   }
+
+  // Escritorio: menú con opciones
+  const fullText = data.text + '\n' + data.url;
+  el('#share-wa').href = 'https://wa.me/?text=' + encodeURIComponent(fullText);
+  el('#share-fb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(data.url);
+  el('#share-menu').classList.toggle('open');
+});
+
+el('#share-copy').addEventListener('click', () => {
+  if (currentModalProduct) copyLink(buildShareUrl(currentModalProduct.id));
 });
 
 /* ==========================================================================
@@ -748,7 +879,7 @@ el('#welcome-overlay').addEventListener('click', (e) => {
    12. INICIO
    ========================================================================== */
 loadCatalog();
-setTimeout(showWelcomePopup, 1000);
+if (!new URLSearchParams(location.search).get('gorra')) setTimeout(showWelcomePopup, 1000);
 </script>
 </body>
 </html>
